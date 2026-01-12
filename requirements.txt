@@ -1,0 +1,73 @@
+# Financial Data Pipeline - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# =============================================================================
+# DATA INGESTION
+# =============================================================================
+yfinance>=0.2.36          # Yahoo Finance API (no key required)
+alpha-vantage>=2.3.1      # Alpha Vantage API wrapper
+requests>=2.31.0          # HTTP client for Polygon and others
+aiohttp>=3.9.0            # Async HTTP for parallel fetching
+
+# =============================================================================
+# DATABASE
+# =============================================================================
+psycopg2-binary>=2.9.9    # PostgreSQL adapter
+sqlalchemy>=2.0.25        # SQL toolkit and ORM
+asyncpg>=0.29.0           # Async PostgreSQL driver
+
+# =============================================================================
+# DATA VALIDATION (Great Expectations)
+# =============================================================================
+great-expectations>=0.18.0  # Data quality framework
+pandas>=2.1.0               # DataFrame operations
+
+# =============================================================================
+# API SERVER
+# =============================================================================
+fastapi>=0.109.0           # Modern web framework
+uvicorn[standard]>=0.27.0  # ASGI server
+pydantic>=2.5.0            # Data validation
+pydantic-settings>=2.1.0   # Settings management
+
+# =============================================================================
+# DASHBOARD
+# =============================================================================
+streamlit>=1.30.0          # Dashboard framework
+plotly>=5.18.0             # Interactive charts
+altair>=4.2.1,<5.0.0       # Declarative visualization (pinned for GE compatibility)
+
+# =============================================================================
+# ORCHESTRATION (choose one)
+# =============================================================================
+# Option A: Prefect (simpler, recommended for this project)
+prefect>=2.14.0            # Workflow orchestration
+
+# Option B: Airflow (more complex, industry standard)
+# Uncomment if you prefer Airflow:
+# apache-airflow>=2.8.0
+
+# =============================================================================
+# UTILITIES
+# =============================================================================
+python-dotenv>=1.0.0       # Environment variable loading
+tenacity>=8.2.0            # Retry logic with exponential backoff
+structlog>=24.1.0          # Structured logging
+pytz>=2024.1               # Timezone handling
+numpy>=1.26.0              # Numerical operations
+
+# =============================================================================
+# TESTING
+# =============================================================================
+pytest>=8.0.0              # Testing framework
+pytest-asyncio>=0.23.0     # Async test support
+pytest-cov>=4.1.0          # Coverage reporting
+httpx>=0.26.0              # Async HTTP client for testing
+
+# =============================================================================
+# DEVELOPMENT
+# =============================================================================
+black>=24.1.0              # Code formatting
+ruff>=0.1.14               # Fast linter
+mypy>=1.8.0                # Type checking
+pre-commit>=3.6.0          # Git hooks

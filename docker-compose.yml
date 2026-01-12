@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  # TimescaleDB - PostgreSQL optimized for time-series data
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: financial_timescaledb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-findata}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-findata_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-financial_data}
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U findata -d financial_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis - for caching and rate limiting (optional but useful)
+  redis:
+    image: redis:7-alpine
+    container_name: financial_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Adminer - lightweight database UI (development only)
+  adminer:
+    image: adminer
+    container_name: financial_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - timescaledb
+    restart: unless-stopped
+
+volumes:
+  timescale_data:
+  redis_data:
+
+networks:
+  default:
+    name: financial_network
