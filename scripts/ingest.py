@@ -5,6 +5,7 @@ from src.ingestion.base import YahooFinanceSource
 from src.database import MarketDataRepository
 from src.database import IngestionLogRepository
 from datetime import datetime, timedelta
+import time
 
 parser = argparse.ArgumentParser("Ingest")
 
@@ -28,7 +29,44 @@ market_data_repository = MarketDataRepository()
 ingestion_log_repository = IngestionLogRepository()
 
 for s in symbol_list:
-    ohlcv_records = yahoo_source.fetch_ohlcv(symbol=s, start_date=start_date, end_date=end_date)
-    market_data_repository.insert_records(records=ohlcv_records)
-    ingestion_log_repository.log_run(source=source, symbol=s)
+    start_time = time.time()
+    error_message = None
+    rows_fetched = 0
+    rows_inserted = 0
+    status = "success"
+
+    try:
+        ohlcv_records = yahoo_source.fetch_ohlcv(
+            symbol=s, 
+            start_date=start_date, 
+            end_date=end_date
+        )
+        rows_fetched = len(ohlcv_records)
+
+        # Insert data
+        rows_attempted, rows_inserted = market_data_repository.insert_records(
+            records=ohlcv_records
+        )
+        # Determne status
+        if rows_inserted == 0 and rows_fetched > 0:
+            status = "partial"
+        elif rows_fetched == 0:
+            status == "failed"
+            error_message = "No data fetched from source"
+    except Exception as e:
+        status = "failed"
+        error_message = "No data fetched from source"
+    finally:
+        # Always log the run
+        duration_ms = int((time.time() - start_time) * 1000)
+        ingestion_log_repository.log_run(
+            source=source,
+            symbol = s,
+            status=status,
+            rows_fetched=rows_fetched,
+            rows_inserted=rows_inserted,
+            duration_ms=duration_ms,
+            error_message=error_message
+        )
+
     break
