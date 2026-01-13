@@ -28,6 +28,15 @@ yahoo_source = YahooFinanceSource()
 market_data_repository = MarketDataRepository()
 ingestion_log_repository = IngestionLogRepository()
 
+# Summary statistics
+overall_start_time = time.time()
+total_fetched = 0
+total_inserted = 0
+success_count = 0
+partial_count = 0
+failed_count = 0
+errors = []
+
 loop_count = 0
 for s in symbol_list:
     start_time = time.time()
@@ -82,3 +91,46 @@ for s in symbol_list:
             error_message=error_message
         )
         print(f"  Logged run: {status} (duration: {duration_ms}ms)\n")
+
+        # Update summary statistics
+        total_fetched += rows_fetched
+        total_inserted += rows_inserted
+        if status == "success":
+            success_count += 1
+        elif status == "partial":
+            partial_count += 1
+        elif status == "failed":
+            failed_count += 1
+            if error_message:
+                errors.append(f"{s}: {error_message}")
+
+# Print summary statistics
+overall_duration = time.time() - overall_start_time
+
+summary = f"""
+{'=' * 70}
+INGESTION SUMMARY
+{'=' * 70}
+Source:           {source.value}
+Date range:       {start_date.date()} to {end_date.date()}
+Symbols:          {len(symbol_list)} ({', '.join(symbol_list)})
+Total duration:   {overall_duration:.2f}s
+
+Rows fetched:     {total_fetched}
+Rows inserted:    {total_inserted}
+Duplicates:       {total_fetched - total_inserted}
+
+Success:          {success_count}
+Partial:          {partial_count}
+Failed:           {failed_count}
+"""
+
+print(summary)
+
+if errors:
+    print("ERRORS:")
+    for error in errors:
+        print(f"  - {error}")
+    print("=" * 70)
+else:
+    print("=" * 70)
