@@ -28,12 +28,20 @@ yahoo_source = YahooFinanceSource()
 market_data_repository = MarketDataRepository()
 ingestion_log_repository = IngestionLogRepository()
 
+loop_count = 0
 for s in symbol_list:
     start_time = time.time()
     error_message = None
     rows_fetched = 0
     rows_inserted = 0
     status = "success"
+
+    # Rate limit for Alpha Vantage: 12 seconds between calls
+    if source == DataSource.ALPHA_VANTAGE and loop_count > 0:
+        print(f"  Rate limiting: waiting 12 seconds before next Alpha Vantage call...")
+        time.sleep(12)
+
+    loop_count += 1
 
     try:
         print(f"Fetching {s} from {source.value} ({start_date.date()} to {end_date.date()})...")

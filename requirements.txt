@@ -52,6 +52,7 @@ prefect>=2.14.0            # Workflow orchestration
 # =============================================================================
 python-dotenv>=1.0.0       # Environment variable loading
 tenacity>=8.2.0            # Retry logic with exponential backoff
+ratelimit>=2.2.1           # Rate limiting for API calls
 structlog>=24.1.0          # Structured logging
 pytz>=2024.1               # Timezone handling
 numpy>=1.26.0              # Numerical operations
