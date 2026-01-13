@@ -36,26 +36,31 @@ for s in symbol_list:
     status = "success"
 
     try:
+        print(f"Fetching {s} from {source.value} ({start_date.date()} to {end_date.date()})...")
         ohlcv_records = yahoo_source.fetch_ohlcv(
-            symbol=s, 
-            start_date=start_date, 
+            symbol=s,
+            start_date=start_date,
             end_date=end_date
         )
         rows_fetched = len(ohlcv_records)
+        print(f"  Fetched {rows_fetched} records")
 
         # Insert data
         rows_attempted, rows_inserted = market_data_repository.insert_records(
             records=ohlcv_records
         )
-        # Determne status
+        print(f"  Inserted {rows_inserted}/{rows_attempted} records (duplicates skipped: {rows_attempted - rows_inserted})")
+
+        # Determine status
         if rows_inserted == 0 and rows_fetched > 0:
             status = "partial"
         elif rows_fetched == 0:
-            status == "failed"
+            status = "failed"
             error_message = "No data fetched from source"
     except Exception as e:
         status = "failed"
-        error_message = "No data fetched from source"
+        error_message = str(e)
+        print(f"  ERROR: {error_message}")
     finally:
         # Always log the run
         duration_ms = int((time.time() - start_time) * 1000)
@@ -68,5 +73,4 @@ for s in symbol_list:
             duration_ms=duration_ms,
             error_message=error_message
         )
-
-    break
+        print(f"  Logged run: {status} (duration: {duration_ms}ms)\n")
