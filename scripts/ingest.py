@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import time
 
 from src.models import DataSource
-from src.ingestion.base import YahooFinanceSource
+from src.ingestion.base import YahooFinanceSource, DataFetchError, RateLimitError
 from src.database import MarketDataRepository, IngestionLogRepository
 
 
@@ -67,9 +67,18 @@ def run_ingestion(symbols: list[str], source: DataSource, days: int = 30) -> dic
             elif rows_fetched == 0:
                 status = "failed"
                 error_message = "No data fetched from source"
-        except Exception as e:
+        except RateLimitError as e:
+            status = "failed"
+            error_message = f"Rate limit exceeded: {str(e)}"
+            print(f"  ERROR: {error_message}")
+        except DataFetchError as e:
             status = "failed"
             error_message = str(e)
+            print(f"  ERROR: {error_message}")
+        except Exception as e:
+            # Catch any unexpected errors
+            status = "failed"
+            error_message = f"Unexpected error: {str(e)}"
             print(f"  ERROR: {error_message}")
         finally:
             # Always log the run
